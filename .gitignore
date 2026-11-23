@@ -1,0 +1,36 @@
+.gradle/
+build/
+local.properties
+.idea/
+*.iml
+.kotlin/
+captures/
+
+# Build outputs and signing
+*.apk
+*.aab
+*.jks
+*.keystore
+keystore.properties
+
+# Never commit game content or system files
+*.nes
+*.sfc
+*.smc
+*.gba
+*.gb
+*.gbc
+*.n64
+*.z64
+*.v64
+*.nds
+*.chd
+*.cue
+*.iso
+*.state
+*.state.*
+
+# OS and logs
+.DS_Store
+Thumbs.db
+*.log
