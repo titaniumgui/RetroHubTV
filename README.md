@@ -7,6 +7,20 @@ RetroHub TV is a **front-end**: it organises your game library and starts games 
 
 **Current version:** 1.2.1 · **License:** [GPL-3.0](LICENSE) · **Requires:** Android 5.0+ and RetroArch
 
+![RetroHub TV home screen](docs/screenshots/home.png)
+
+## Screenshots
+
+| Game library | Game details |
+|---|---|
+| ![Game library tinted by the selected game](docs/screenshots/games.png) | ![Game details page](docs/screenshots/details.png) |
+| **Search** | **Profiles** |
+| ![Search results](docs/screenshots/search.png) | ![Profile picker](docs/screenshots/profiles.png) |
+| **Settings** | |
+| ![Settings with About section](docs/screenshots/settings.png) | |
+
+*The games, artwork, studios and player names shown are fictional demo content made for these screenshots.*
+
 ## Features
 
 - **Top-shelf home screen:** the focused game's artwork fills the screen, with shelves for recent games, favourites and systems
