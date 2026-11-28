@@ -7,7 +7,7 @@ A lightweight, console-style game launcher for Android TV, designed for devices 
 RetroHub TV is a **front-end**: it organises your game library and starts games in your existing
 [RetroArch](https://www.retroarch.com/) installation. It contains no emulator, cores, games or BIOS files.
 
-**Current version:** 1.2.1 · **License:** [GPL-3.0](LICENSE) · **Requires:** Android 5.0+ and RetroArch
+**Current version:** 1.3 · **License:** [GPL-3.0](LICENSE) · **Requires:** Android 5.0+ and RetroArch
 
 ![RetroHub TV home screen](docs/screenshots/home.png)
 

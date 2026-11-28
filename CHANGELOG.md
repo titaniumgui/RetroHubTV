@@ -2,7 +2,7 @@
 
 All notable changes are listed here. Versions follow `MAJOR.MINOR.PATCH`.
 
-## Unreleased
+## 1.3 - 2026-11-28
 
 ### Added
 - Arabic language support with a right-to-left layout, Arabic plural forms, and Arabic dates and times.
