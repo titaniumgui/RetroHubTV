@@ -1,5 +1,6 @@
 package com.retrohub.tv.metadata
 
+import com.retrohub.tv.i18n.tr
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -60,13 +61,13 @@ class MetadataService(private val context: Context, private val db: AppDatabase)
             val games = db.games().forMetadata(system.id, listOf(MetadataStatus.PENDING))
             if (games.isEmpty()) continue
             try {
-                onProgress("${system.name}: reading checksums")
+                onProgress(tr("{0}: reading checksums", system.name))
                 val requests = games.map { g ->
                     coroutineContext.ensureActive()
                     val crc = g.crc ?: crcOf(g)?.also { db.games().setCrc(g.id, it) }
                     MatchRequest(g.id, g.fileName, crc)
                 }
-                onProgress("${system.name}: updating game database")
+                onProgress(tr("{0}: updating game database", system.name))
                 val rdb = ensureDatabase(system.metadataDb)
 
                 val matcher = MetadataMatcher(requests)
@@ -77,7 +78,7 @@ class MetadataService(private val context: Context, private val db: AppDatabase)
 
                 games.forEachIndexed { i, g ->
                     coroutineContext.ensureActive()
-                    onProgress("${system.name}: artwork ${i + 1}/${games.size}")
+                    onProgress(tr("{0}: artwork {1}/{2}", system.name, i + 1, games.size))
                     val name = resolved[g.id]
                     if (name == null) {
                         db.games().setMetadataStatus(g.id, MetadataStatus.NOT_FOUND)
@@ -105,7 +106,7 @@ class MetadataService(private val context: Context, private val db: AppDatabase)
                     }
                 }
             } catch (e: IOException) {
-                errors += "${system.name}: ${e.message ?: "network error"}"
+                errors += "${system.name}: ${e.message ?: tr("network error")}"
             } catch (e: IllegalStateException) {
                 errors += "${system.name}: ${e.message}"
             } catch (e: IllegalArgumentException) {

@@ -1,5 +1,6 @@
 package com.retrohub.tv.ui.components
 
+import com.retrohub.tv.i18n.tr
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -82,9 +83,9 @@ fun EditTextDialog(
             )
             Spacer(Modifier.height(20.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                RhButton("Save", onClick = { onConfirm(value.text) }, primary = true)
-                RhButton("Clear", onClick = { value = TextFieldValue("") })
-                RhButton("Cancel", onClick = onDismiss)
+                RhButton(tr("Save"), onClick = { onConfirm(value.text) }, primary = true)
+                RhButton(tr("Clear"), onClick = { value = TextFieldValue("") })
+                RhButton(tr("Cancel"), onClick = onDismiss)
             }
         }
     }
@@ -109,7 +110,7 @@ fun ConfirmDialog(title: String, text: String, confirm: String, onDismiss: () ->
             Text(text, style = MaterialTheme.typography.bodyMedium)
             Spacer(Modifier.height(20.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                RhButton("Cancel", onClick = onDismiss, modifier = Modifier.focusRequester(focus))
+                RhButton(tr("Cancel"), onClick = onDismiss, modifier = Modifier.focusRequester(focus))
                 RhButton(confirm, onClick = onConfirm, primary = true)
             }
         }

@@ -1,5 +1,7 @@
 package com.retrohub.tv.launch
 
+import com.retrohub.tv.i18n.tr
+
 /**
  * RetroArch Android launch contract (verified against the RetroArch 32-bit APK in this repo,
  * com.retroarch.ra32 1.22.2, and RetroArch's source):
@@ -75,28 +77,28 @@ object LaunchPlanner {
             ?: coreFile(i.systemCoreName, i.coreDirectory)
 
     fun plan(i: Inputs): Result {
-        if (i.packageName.isBlank()) return Result.Blocked("Set the RetroArch package name in Settings.")
-        if (i.activityName.isBlank()) return Result.Blocked("Set the RetroArch activity in Settings.")
+        if (i.packageName.isBlank()) return Result.Blocked(tr("Set the RetroArch package name in Settings."))
+        if (i.activityName.isBlank()) return Result.Blocked(tr("Set the RetroArch activity in Settings."))
         val rom = i.romPath?.trim().orEmpty()
         if (rom.isEmpty()) {
             return Result.Blocked(
                 if (i.romDocumentUri != null) {
-                    "This game was found through a Storage Access Framework folder that has no " +
+                    tr("This game was found through a Storage Access Framework folder that has no " +
                         "filesystem path. RetroArch cannot open content:// URIs, only file paths. " +
                         "Keep ROMs in internal storage and add the folder by path (or pick it from " +
-                        "the \"Internal storage\" root in the folder picker)."
+                        "the \"Internal storage\" root in the folder picker).")
                 } else {
-                    "This game has no file path."
+                    tr("This game has no file path.")
                 }
             )
         }
         val core = resolveCore(i) ?: return Result.Blocked(
             when {
                 i.gameCoreOverride.isBlank() && i.systemCoreName.isBlank() && i.systemCorePath.isBlank() ->
-                    "No core configured. Set a core name or core path for this system (or this game)."
+                    tr("No core configured. Set a core name or core path for this system (or this game).")
                 else ->
-                    "Core directory not set. Open Settings and press \"Detect\" next to Core directory, " +
-                        "or type the folder that holds the *$CORE_SUFFIX files."
+                    tr("Core directory not set. Open Settings and press \"Detect\" next to Core directory, " +
+                        "or type the folder that holds the *{0} files.", CORE_SUFFIX)
             }
         )
         val extras = buildList {

@@ -1,5 +1,7 @@
 package com.retrohub.tv
 
+import com.retrohub.tv.i18n.AppLanguage
+import com.retrohub.tv.i18n.I18n
 import android.app.Application
 import android.content.ComponentCallbacks2
 import coil.ImageLoader
@@ -34,6 +36,11 @@ class RetroHubApp : Application(), ImageLoaderFactory {
     val isLite: Boolean by lazy { MemoryProfile.isLite(settingsStore.current.liteMode, memory) }
 
     private var imageLoader: ImageLoader? = null
+
+    override fun onCreate() {
+        super.onCreate()
+        AppLanguage.fromCode(settingsStore.current.language)?.let(I18n::apply)
+    }
 
     override fun newImageLoader(): ImageLoader {
         val lite = isLite

@@ -1,5 +1,6 @@
 package com.retrohub.tv.ui.screens
 
+import com.retrohub.tv.i18n.tr
 import android.content.ActivityNotFoundException
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -48,7 +49,7 @@ import com.retrohub.tv.ui.components.ToggleRow
 import com.retrohub.tv.ui.theme.RH
 import java.io.File
 
-private enum class Field(val label: String, val hint: String) {
+private enum class Field(private val labelEn: String, private val hintEn: String) {
     NAME("Name", "Shown on the dashboard."),
     FOLDER("ROM folder (path)", "Absolute path in internal storage, e.g. the folder holding this system's games."),
     EXT("File extensions", "Comma separated, without dots."),
@@ -57,7 +58,10 @@ private enum class Field(val label: String, val hint: String) {
     BIOS_DIR("BIOS folder", "Must match RetroArch → Settings → Directory → System/BIOS."),
     BIOS_FILES("Required BIOS files", "Comma separated file names to verify, e.g. as listed in the core's documentation."),
     ART("Artwork folder (optional)", "Images named like the ROM: <rom name>.png / .jpg / .webp"),
-    DB("Metadata database", "Exact libretro-database name, e.g. \"Nintendo - Game Boy\" (see github.com/libretro/libretro-database/tree/master/rdb)."),
+    DB("Metadata database", "Exact libretro-database name, e.g. \"Nintendo - Game Boy\" (see github.com/libretro/libretro-database/tree/master/rdb).");
+
+    val label: String get() = tr(labelEn)
+    val hint: String get() = tr(hintEn)
 }
 
 @Composable
@@ -95,7 +99,7 @@ fun EditSystemScreen(vm: MainViewModel, screen: Screen.EditSystem) {
         val value = if (path != null && StorageAccess.hasBroadFileAccess(context)) path else uri.toString()
         draft = draft?.let { if (pickTarget == Field.ART) it.copy(artworkFolder = value) else it.copy(romFolder = value) }
         if (path == null) {
-            vm.toast("This folder has no filesystem path. RetroHub can list it, but RetroArch cannot open its games.")
+            vm.toast(tr("This folder has no filesystem path. RetroHub can list it, but RetroArch cannot open its games."))
         }
     }
 
@@ -107,7 +111,7 @@ fun EditSystemScreen(vm: MainViewModel, screen: Screen.EditSystem) {
         try {
             picker.launch(null)
         } catch (_: ActivityNotFoundException) {
-            vm.toast("This TV has no system folder picker. Type the path instead and grant storage access in Settings.")
+            vm.toast(tr("This TV has no system folder picker. Type the path instead and grant storage access in Settings."))
         }
     }
 
@@ -116,23 +120,23 @@ fun EditSystemScreen(vm: MainViewModel, screen: Screen.EditSystem) {
     run {
         Page(
             vm,
-            title = if (d.id == 0L) "New system" else "Edit ${d.name}",
-            subtitle = "Nothing is guessed: set the folder, file types and the core installed in your RetroArch.",
+            title = if (d.id == 0L) tr("New system") else tr("Edit {0}", d.name),
+            subtitle = tr("Nothing is guessed: set the folder, file types and the core installed in your RetroArch."),
             scroll = true,
             actions = {
-                RhButton("Save & scan", { vm.saveSystem(d, scanAfter = true) }, primary = true)
-                RhButton("Save", { vm.saveSystem(d, scanAfter = false) })
+                RhButton(tr("Save & scan"), { vm.saveSystem(d, scanAfter = true) }, primary = true)
+                RhButton(tr("Save"), { vm.saveSystem(d, scanAfter = false) })
                 // Delete lives up here, away from the save buttons, so a stray D-pad press can't reach it.
-                if (d.id != 0L) RhButton("Delete", { confirmDelete = true })
+                if (d.id != 0L) RhButton(tr("Delete"), { confirmDelete = true })
             },
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 FieldRow(Field.NAME.label, d.name, { editing = Field.NAME }, focus.modifier("f:NAME"))
 
-                SectionTitle("ROMs", Modifier.padding8())
-                FieldRow(Field.FOLDER.label, d.romFolder, { editing = Field.FOLDER }, focus.modifier("f:FOLDER"), hint = "Select to type a path")
+                SectionTitle(tr("ROMs"), Modifier.padding8())
+                FieldRow(Field.FOLDER.label, d.romFolder, { editing = Field.FOLDER }, focus.modifier("f:FOLDER"), hint = tr("Select to type a path"))
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    RhButton("Pick folder (system picker)", { launchPicker(Field.FOLDER) })
+                    RhButton(tr("Pick folder (system picker)"), { launchPicker(Field.FOLDER) })
                 }
                 val info = remember(d.romFolder, resumeTick) { StorageAccess.describeFolder(context, d.romFolder) }
                 Notice(
@@ -144,9 +148,9 @@ fun EditSystemScreen(vm: MainViewModel, screen: Screen.EditSystem) {
                     },
                 )
                 FieldRow(Field.EXT.label, d.extensions, { editing = Field.EXT }, focus.modifier("f:EXT"))
-                ToggleRow("Scan sub-folders", d.recursive, { draft = d.copy(recursive = !d.recursive) }, hint = "Up to 6 levels deep")
+                ToggleRow(tr("Scan sub-folders"), d.recursive, { draft = d.copy(recursive = !d.recursive) }, hint = tr("Up to 6 levels deep"))
 
-                SectionTitle("RetroArch core", Modifier.padding8())
+                SectionTitle(tr("RetroArch core"), Modifier.padding8())
                 FieldRow(
                     Field.CORE_NAME.label,
                     d.coreName.takeIf { it.isNotBlank() }?.let { id -> CoreCatalog.displayName(id)?.let { "$it  ·  $id" } ?: id }.orEmpty(),
@@ -157,8 +161,8 @@ fun EditSystemScreen(vm: MainViewModel, screen: Screen.EditSystem) {
                 FieldRow(Field.CORE_PATH.label, d.corePath, { editing = Field.CORE_PATH }, focus.modifier("f:CORE_PATH"))
                 val core = d.corePath.trim().ifEmpty { null } ?: LaunchPlanner.coreFile(d.coreName, settings.coreDirectory)
                 InfoLine(
-                    "Resolved core",
-                    core ?: if (d.coreName.isBlank()) "Set a core name or path" else "Set the core directory in Settings",
+                    tr("Resolved core"),
+                    core ?: if (d.coreName.isBlank()) tr("Set a core name or path") else tr("Set the core directory in Settings"),
                     if (core == null) RH.Danger else RH.Text,
                     mono = core != null,
                 )
@@ -168,22 +172,22 @@ fun EditSystemScreen(vm: MainViewModel, screen: Screen.EditSystem) {
                 FieldRow(Field.BIOS_FILES.label, d.biosFiles, { editing = Field.BIOS_FILES }, focus.modifier("f:BIOS_FILES"))
                 BiosStatus(d, resumeTick)
 
-                SectionTitle("Game info & artwork", Modifier.padding8())
+                SectionTitle(tr("Game info & artwork"), Modifier.padding8())
                 FieldRow(
-                    "Metadata database (libretro)",
+                    tr("Metadata database (libretro)"),
                     d.metadataDb,
                     { chooseDb = true },
                     focus.modifier("f:DB"),
-                    hint = "Covers, screenshots and game details are downloaded from this libretro database.",
+                    hint = tr("Covers, screenshots and game details are downloaded from this libretro database."),
                 )
-                FieldRow(Field.ART.label, d.artworkFolder, { editing = Field.ART }, focus.modifier("f:ART"), hint = Field.ART.hint + " Your own artwork always wins.")
-                RhButton("Pick artwork folder", { launchPicker(Field.ART) })
+                FieldRow(Field.ART.label, d.artworkFolder, { editing = Field.ART }, focus.modifier("f:ART"), hint = Field.ART.hint + " " + tr("Your own artwork always wins."))
+                RhButton(tr("Pick artwork folder"), { launchPicker(Field.ART) })
 
                 Spacer(Modifier.height(16.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    RhButton("Save & scan", { vm.saveSystem(d, scanAfter = true) }, primary = true)
-                    RhButton("Save", { vm.saveSystem(d, scanAfter = false) })
-                    RhButton("Cancel", { vm.back() })
+                    RhButton(tr("Save & scan"), { vm.saveSystem(d, scanAfter = true) }, primary = true)
+                    RhButton(tr("Save"), { vm.saveSystem(d, scanAfter = false) })
+                    RhButton(tr("Cancel"), { vm.back() })
                 }
                 Spacer(Modifier.height(40.dp))
             }
@@ -192,16 +196,16 @@ fun EditSystemScreen(vm: MainViewModel, screen: Screen.EditSystem) {
 
     if (chooseCore) {
         val cores = CoreCatalog.optionsFor(d.metadataDb)
-        val options = cores.mapIndexed { i, c -> c.name + if (i == 0) "  (recommended)" else "" } + "Other… (type a core name)"
-        ChoiceDialog("Core for ${d.name.ifBlank { "this system" }}", options, onDismiss = { chooseCore = false }) { i ->
+        val options = cores.mapIndexed { i, c -> c.name + if (i == 0) "  " + tr("(recommended)") else "" } + tr("Other… (type a core name)")
+        ChoiceDialog(tr("Core for {0}", d.name.ifBlank { tr("this system") }), options, onDismiss = { chooseCore = false }) { i ->
             chooseCore = false
             if (i < cores.size) draft = d.copy(coreName = cores[i].id) else editing = Field.CORE_NAME
         }
     }
 
     if (chooseDb) {
-        val options = listOf("None (no metadata)") + SystemPresets.metadataDatabases + "Other… (type the name)"
-        ChoiceDialog("Metadata database", options, onDismiss = { chooseDb = false }) { i ->
+        val options = listOf(tr("None (no metadata)")) + SystemPresets.metadataDatabases + tr("Other… (type the name)")
+        ChoiceDialog(tr("Metadata database"), options, onDismiss = { chooseDb = false }) { i ->
             chooseDb = false
             when (i) {
                 0 -> draft = d.copy(metadataDb = "")
@@ -247,9 +251,9 @@ fun EditSystemScreen(vm: MainViewModel, screen: Screen.EditSystem) {
 
     if (confirmDelete) {
         ConfirmDialog(
-            title = "Delete ${d.name}?",
-            text = "Removes the system and its game list from RetroHub (favourites and play history for it too). ROM files are not touched.",
-            confirm = "Delete",
+            title = tr("Delete {0}?", d.name),
+            text = tr("Removes the system and its game list from RetroHub (favourites and play history for it too). ROM files are not touched."),
+            confirm = tr("Delete"),
             onDismiss = { confirmDelete = false },
             onConfirm = { confirmDelete = false; vm.deleteSystem(d) },
         )
@@ -262,15 +266,15 @@ private fun BiosStatus(d: SystemEntity, tick: Int) {
     val files = remember(d.biosFiles) { d.biosFiles.split(',', ';').map { it.trim() }.filter { it.isNotEmpty() } }
     if (files.isEmpty()) {
         Text(
-            "RetroArch loads BIOS files from its own System/BIOS directory; RetroHub cannot pass a BIOS path at launch. " +
-                "List required files here to check they are present.",
+            tr("RetroArch loads BIOS files from its own System/BIOS directory; RetroHub cannot pass a BIOS path at launch. " +
+                "List required files here to check they are present."),
             style = MaterialTheme.typography.bodySmall,
             color = RH.TextFaint,
         )
         return
     }
     if (d.biosFolder.isBlank()) {
-        Text("Set the BIOS folder to verify these files.", style = MaterialTheme.typography.bodySmall.copy(color = RH.Gold))
+        Text(tr("Set the BIOS folder to verify these files."), style = MaterialTheme.typography.bodySmall.copy(color = RH.Gold))
         return
     }
     val canCheck = remember(tick) { StorageAccess.hasBroadFileAccess(context) } && !StoragePaths.isContentUri(d.biosFolder)
@@ -279,13 +283,13 @@ private fun BiosStatus(d: SystemEntity, tick: Int) {
     }
     Column {
         if (!canCheck) {
-            Text("Grant storage access in Settings to verify BIOS files.", style = MaterialTheme.typography.bodySmall.copy(color = RH.Gold))
+            Text(tr("Grant storage access in Settings to verify BIOS files."), style = MaterialTheme.typography.bodySmall.copy(color = RH.Gold))
         }
         files.forEach { name ->
             val ok = status[name]
             InfoLine(
                 name,
-                when (ok) { true -> "✓ found"; false -> "✗ missing"; null -> "not checked" },
+                when (ok) { true -> tr("✓ found"); false -> tr("✗ missing"); null -> tr("not checked") },
                 when (ok) { true -> RH.Ok; false -> RH.Danger; null -> RH.TextDim },
             )
         }

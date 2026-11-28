@@ -11,6 +11,7 @@ app/src/main/java/com/retrohub/tv/
 ├── MainActivity.kt     Single activity, screen routing, status overlay
 ├── data/               Room entities and DAOs, settings, system presets, core catalog
 ├── detect/             RetroArch detection, SAF paths, playlist import, game discovery
+├── i18n/               Languages, the tr() helper and translation catalogs
 ├── launch/             Pure launch planning and the Android intent launcher
 ├── metadata/           Streaming RDB reader, matching, artwork and details download
 ├── perf/               Device memory profile, Lite mode, cache budgets
@@ -82,6 +83,25 @@ MetadataService.run()
 
 Matching order is CRC, exact name, then name without region and revision tags. Artwork from a user's own folder is
 never replaced.
+
+## Languages
+
+RetroHub is available in English and Arabic. The language is chosen on first launch and can be changed in Settings.
+
+- **Strings:** user-visible text is written in English and wrapped in `tr("…")`, with `{0}`, `{1}` placeholders for
+  values. `trCount(n, "{0} game", "{0} games")` handles counts. Translations live in Kotlin catalogs keyed by the
+  English text (`i18n/ArabicCatalog.kt`), so pure-Kotlin code such as `LaunchPlanner` can return translated messages
+  without a `Context`. A missing translation falls back to English.
+- **Plurals:** Arabic has six plural forms (zero, one, two, few, many, other), selected by `I18n.arabicPluralIndex`.
+- **Layout:** the root composable sets `LayoutDirection.Rtl` for Arabic and rebuilds the UI when the language changes.
+  Gradients behind text use `startScrim`, which follows the reading direction. Paths and package names use
+  `TextDirection.Content`; the RetroHub TV wordmark is always left to right.
+- **Dates:** the default locale is set to Arabic with Western digits. `MainActivity` re-applies it because Android
+  resets the default locale when an activity starts.
+- **Checks:** `I18nTest` scans the source and fails if any `tr()` or `trCount()` string has no Arabic translation, or
+  if a translation drops a placeholder.
+
+To add a language, add it to `AppLanguage`, create a catalog, and return it from `I18n.catalogFor`.
 
 ## Low-memory design
 

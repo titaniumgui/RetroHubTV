@@ -36,6 +36,8 @@ data class AppSettings(
     val metadataSnaps: Boolean = true,
     /** Controller combo that quits RetroArch back to RetroHub (RetroArch's input_quit_gamepad_combo). */
     val exitCombo: Int = 7,
+    /** App language code ("en", "ar"). Blank until chosen on first launch. */
+    val language: String = "",
 ) {
     companion object {
         const val DEFAULT_PACKAGE = "com.retroarch.ra32"
@@ -68,6 +70,7 @@ class SettingsStore(context: Context) {
             metadataAuto = prefs.getBoolean("metaAuto", d.metadataAuto),
             metadataSnaps = prefs.getBoolean("metaSnaps", d.metadataSnaps),
             exitCombo = prefs.getInt("exitCombo", d.exitCombo),
+            language = prefs.getString("lang", null) ?: "",
         )
     }
 
@@ -89,6 +92,7 @@ class SettingsStore(context: Context) {
             .putBoolean("metaAuto", s.metadataAuto)
             .putBoolean("metaSnaps", s.metadataSnaps)
             .putInt("exitCombo", s.exitCombo)
+            .putString("lang", s.language)
             .apply()
         state.value = read()
     }

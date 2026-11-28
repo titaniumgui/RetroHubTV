@@ -1,5 +1,11 @@
 package com.retrohub.tv.ui.components
 
+import androidx.compose.ui.text.style.TextDirection
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.LayoutDirection
+import com.retrohub.tv.i18n.tr
+import com.retrohub.tv.i18n.trCount
 import android.net.Uri
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -60,19 +66,21 @@ import java.io.File
 
 // ------------------------------------------------------------------ brand
 
-/** White controller + "RetroHub TV" wordmark. */
+/** White controller + "RetroHub TV" wordmark. Always left to right: it's a name, even in Arabic. */
 @Composable
 fun BrandMark(modifier: Modifier = Modifier, height: Dp = 22.dp) {
-    Row(modifier, verticalAlignment = Alignment.CenterVertically) {
-        Icon(
-            painter = painterResource(R.drawable.ic_controller),
-            contentDescription = null,
-            tint = Color.White,
-            modifier = Modifier.size(width = height * 1.5f, height = height),
-        )
-        Spacer(Modifier.width(12.dp))
-        Text("RetroHub", fontSize = (height.value * 0.95f).sp, fontWeight = FontWeight.Bold, letterSpacing = (-0.3).sp)
-        Text(" TV", fontSize = (height.value * 0.95f).sp, fontWeight = FontWeight.Light)
+    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+        Row(modifier, verticalAlignment = Alignment.CenterVertically) {
+            Icon(
+                painter = painterResource(R.drawable.ic_controller),
+                contentDescription = null,
+                tint = Color.White,
+                modifier = Modifier.size(width = height * 1.5f, height = height),
+            )
+            Spacer(Modifier.width(12.dp))
+            Text("RetroHub", fontSize = (height.value * 0.95f).sp, fontWeight = FontWeight.Bold, letterSpacing = (-0.3).sp)
+            Text(" TV", fontSize = (height.value * 0.95f).sp, fontWeight = FontWeight.Light)
+        }
     }
 }
 
@@ -206,7 +214,18 @@ fun Avatar(profile: ProfileEntity?, size: Dp, modifier: Modifier = Modifier) {
 
 // ------------------------------------------------------------------ artwork
 
-fun gamesLabel(count: Int): String = if (count == 1) "1 game" else "$count games"
+/** Horizontal gradient from the reading-start edge: left in English, right in Arabic. */
+@Composable
+fun startScrim(vararg stops: Pair<Float, Color>): Brush {
+    val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
+    return Brush.horizontalGradient(
+        *stops,
+        startX = if (rtl) Float.POSITIVE_INFINITY else 0f,
+        endX = if (rtl) 0f else Float.POSITIVE_INFINITY,
+    )
+}
+
+fun gamesLabel(count: Int): String = trCount(count, "{0} game", "{0} games")
 
 /** Converts a stored image location (file path or content:// URI) into a Coil model. */
 fun imageModel(location: String?): Any? = when {
@@ -276,7 +295,7 @@ fun Backdrop(location: String?, modifier: Modifier = Modifier, alpha: Float = 0.
             alpha = alpha,
             modifier = Modifier.fillMaxSize(),
         )
-        Box(Modifier.fillMaxSize().background(Brush.horizontalGradient(0f to Color.Black, 0.55f to Color.Black.copy(alpha = 0.55f), 1f to Color.Transparent)))
+        Box(Modifier.fillMaxSize().background(startScrim(0f to Color.Black, 0.55f to Color.Black.copy(alpha = 0.55f), 1f to Color.Transparent)))
         Box(Modifier.fillMaxSize().background(Brush.verticalGradient(0.5f to Color.Transparent, 1f to Color.Black)))
     }
 }
@@ -423,8 +442,8 @@ fun FieldRow(label: String, value: String, onClick: () -> Unit, modifier: Modifi
             Text(label.uppercase(), style = MaterialTheme.typography.labelSmall, color = RH.TextFaint)
             Spacer(Modifier.height(2.dp))
             Text(
-                value.ifBlank { "Not set" },
-                style = MaterialTheme.typography.bodyLarge,
+                value.ifBlank { tr("Not set") },
+                style = MaterialTheme.typography.bodyLarge.copy(textDirection = TextDirection.Content),
                 color = if (value.isBlank()) RH.TextFaint else RH.Text,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
@@ -468,7 +487,7 @@ fun InfoLine(label: String, value: String, valueColor: Color = RH.Text, mono: Bo
         Text(label, style = MaterialTheme.typography.bodyMedium, color = RH.TextFaint, modifier = Modifier.width(140.dp))
         Text(
             value,
-            style = MaterialTheme.typography.bodyMedium.copy(fontFamily = if (mono) FontFamily.Monospace else FontFamily.Default),
+            style = MaterialTheme.typography.bodyMedium.copy(fontFamily = if (mono) FontFamily.Monospace else FontFamily.Default, textDirection = TextDirection.Content),
             color = valueColor,
         )
     }

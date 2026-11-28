@@ -1,5 +1,6 @@
 package com.retrohub.tv.scan
 
+import com.retrohub.tv.i18n.tr
 import android.content.Context
 import android.net.Uri
 import android.provider.DocumentsContract
@@ -30,8 +31,8 @@ class RomScanner(private val context: Context, private val db: AppDatabase) {
 
     suspend fun scan(system: SystemEntity, onProgress: (Int) -> Unit): ScanResult = withContext(Dispatchers.IO) {
         val extensions = StoragePaths.parseExtensions(system.extensions)
-        if (system.romFolder.isBlank()) return@withContext ScanResult(system.name, 0, 0, "No ROM folder set")
-        if (extensions.isEmpty()) return@withContext ScanResult(system.name, 0, 0, "No file extensions set")
+        if (system.romFolder.isBlank()) return@withContext ScanResult(system.name, 0, 0, tr("No ROM folder set"))
+        if (extensions.isEmpty()) return@withContext ScanResult(system.name, 0, 0, tr("No file extensions set"))
 
         val stamp = System.currentTimeMillis()
         val art = loadArtwork(system.artworkFolder)
@@ -79,7 +80,7 @@ class RomScanner(private val context: Context, private val db: AppDatabase) {
             flush()
             null
         } catch (e: SecurityException) {
-            "Permission denied: ${e.message ?: "grant storage access or pick the folder again"}"
+            tr("Permission denied: {0}", e.message ?: tr("grant storage access or pick the folder again"))
         } catch (e: ScanException) {
             e.message
         }
@@ -90,7 +91,7 @@ class RomScanner(private val context: Context, private val db: AppDatabase) {
         if (total == 0 && db.games().countBySystem(system.id) > 0) {
             return@withContext ScanResult(
                 system.name, 0, 0,
-                "found no games in ${system.romFolder}. Nothing was removed — check that the storage is connected and readable.",
+                tr("found no games in {0}. Nothing was removed — check that the storage is connected and readable.", system.romFolder),
             )
         }
         val removed = db.games().deleteStale(system.id, stamp)
@@ -99,10 +100,10 @@ class RomScanner(private val context: Context, private val db: AppDatabase) {
     }
 
     private suspend fun walkFiles(root: File, ext: Set<String>, recursive: Boolean, emit: suspend (Found) -> Unit) {
-        if (!root.isDirectory) throw ScanException("Folder not found or not readable: ${root.path}")
+        if (!root.isDirectory) throw ScanException(tr("Folder not found or not readable: {0}", root.path))
         // Without access, Android lists non-media files as missing instead of failing, so check first.
         if (!StorageAccess.hasBroadFileAccess(context)) {
-            throw ScanException("no storage access, so ${root.path} can't be read. Grant access in Settings → Storage.")
+            throw ScanException(tr("no storage access, so {0} can't be read. Grant access in Settings → Storage.", root.path))
         }
         val stack = ArrayDeque<Pair<File, Int>>().apply { add(root to 0) }
         while (stack.isNotEmpty()) {
@@ -126,7 +127,7 @@ class RomScanner(private val context: Context, private val db: AppDatabase) {
 
     private suspend fun walkTree(tree: Uri, ext: Set<String>, recursive: Boolean, emit: suspend (Found) -> Unit) {
         if (!StorageAccess.hasTreePermission(context, tree.toString())) {
-            throw ScanException("Folder permission missing. Pick the folder again.")
+            throw ScanException(tr("Folder permission missing. Pick the folder again."))
         }
         val authority = tree.authority
         val primary = StorageAccess.primaryRoot()

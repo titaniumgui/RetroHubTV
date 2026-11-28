@@ -1,5 +1,6 @@
 package com.retrohub.tv.ui.screens
 
+import com.retrohub.tv.i18n.tr
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -73,14 +74,14 @@ fun TopBar(vm: MainViewModel, selected: Tab, focus: FocusRestore? = null) {
                 .padding(4.dp),
             horizontalArrangement = Arrangement.spacedBy(2.dp),
         ) {
-            TabPill("Home", selected == Tab.HOME, focus?.modifier("tab:home") ?: Modifier) { vm.goHome() }
-            TabPill("Games", selected == Tab.GAMES, focus?.modifier("tab:games") ?: Modifier) { vm.goTab(Screen.Library(null)) }
-            TabPill("Search", selected == Tab.SEARCH, focus?.modifier("tab:search") ?: Modifier) { vm.goTab(Screen.Search) }
+            TabPill(tr("Home"), selected == Tab.HOME, focus?.modifier("tab:home") ?: Modifier) { vm.goHome() }
+            TabPill(tr("Games"), selected == Tab.GAMES, focus?.modifier("tab:games") ?: Modifier) { vm.goTab(Screen.Library(null)) }
+            TabPill(tr("Search"), selected == Tab.SEARCH, focus?.modifier("tab:search") ?: Modifier) { vm.goTab(Screen.Search) }
         }
         Row(Modifier.align(Alignment.CenterEnd), verticalAlignment = Alignment.CenterVertically) {
             Clock()
             Spacer(Modifier.width(14.dp))
-            RhIconButton(Icons.Filled.Settings, "Settings", { vm.navigate(Screen.Settings) }, focus?.modifier("top:settings") ?: Modifier)
+            RhIconButton(Icons.Filled.Settings, tr("Settings"), { vm.navigate(Screen.Settings) }, focus?.modifier("top:settings") ?: Modifier)
             Spacer(Modifier.width(8.dp))
             val lite = LocalLite.current
             Surface(

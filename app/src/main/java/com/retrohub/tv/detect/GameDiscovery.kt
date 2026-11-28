@@ -1,5 +1,6 @@
 package com.retrohub.tv.detect
 
+import com.retrohub.tv.i18n.tr
 import com.retrohub.tv.data.SystemEntity
 import com.retrohub.tv.storage.StorageAccess
 import com.retrohub.tv.storage.StoragePaths
@@ -28,11 +29,11 @@ class GameDiscovery(private val storage: RetroArchStorage) {
         val root = StorageAccess.primaryRoot()
         val existingFolders = existing.mapNotNull { it.romFolder.trimEnd('/').ifEmpty { null } }.toSet()
 
-        onProgress("Reading RetroArch playlists…")
+        onProgress(tr("Reading RetroArch playlists…"))
         val (fromPlaylists, playlistCount) = readPlaylists(root, retroArchPackage, configFile, existingFolders)
 
         val raCores = retroArchCores(retroArchPackage, configFile)
-        onProgress("Looking for games on storage…")
+        onProgress(tr("Looking for games on storage…"))
         val (fromScan, scanned) = scanStorage(root, existingFolders, raCores, onProgress)
 
         Result(Discovery.merge(fromPlaylists, fromScan), playlistCount, scanned)
@@ -160,7 +161,7 @@ class GameDiscovery(private val storage: RetroArchStorage) {
             for ((f, db) in found) if (f.name in visible) byDb.getOrPut(db) { ArrayList() }.add(f.path)
             if (visited - lastReport >= 2000) {
                 lastReport = visited
-                onProgress("Looking for games… ${byDb.values.sumOf { it.size }} found")
+                onProgress(tr("Looking for games… {0} found", byDb.values.sumOf { it.size }))
             }
         }
         val proposals = byDb.map { (db, files) ->

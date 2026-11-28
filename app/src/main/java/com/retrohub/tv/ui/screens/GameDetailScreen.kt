@@ -1,5 +1,7 @@
 package com.retrohub.tv.ui.screens
 
+import com.retrohub.tv.i18n.tr
+import com.retrohub.tv.i18n.trCount
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -108,22 +110,22 @@ fun GameDetailScreen(vm: MainViewModel, gameId: Long) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     g.releaseYear?.let { Chip(it.toString()) }
                     g.genre?.let { Chip(it) }
-                    g.players?.let { Chip(if (it == 1) "1 player" else "$it players") }
+                    g.players?.let { Chip(trCount(it, "{0} player", "{0} players")) }
                     g.region?.let { Chip(it) }
                 }
                 Spacer(Modifier.height(24.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     // One button whose label changes, so focus survives when an auto-save appears.
-                    RhButton(if (auto != null) "Resume" else "Play", { vm.play(g.id) }, focus.modifier("play"), icon = Icons.Filled.PlayArrow, primary = true)
+                    RhButton(if (auto != null) tr("Resume") else tr("Play"), { vm.play(g.id) }, focus.modifier("play"), icon = Icons.Filled.PlayArrow, primary = true)
                     if (auto != null) {
-                        RhButton("Start fresh", { vm.play(g.id, fresh = true) }, focus.modifier("fresh"), icon = Icons.Filled.Refresh)
+                        RhButton(tr("Start fresh"), { vm.play(g.id, fresh = true) }, focus.modifier("fresh"), icon = Icons.Filled.Refresh)
                     }
-                    RhButton(if (favorite) "Favourite" else "Add to favourites", { vm.setFavorite(g.id, !favorite) }, focus.modifier("fav"), icon = if (favorite) Icons.Filled.Star else null)
+                    RhButton(if (favorite) tr("Favourite") else tr("Add to favourites"), { vm.setFavorite(g.id, !favorite) }, focus.modifier("fav"), icon = if (favorite) Icons.Filled.Star else null)
                     RhButton("", { menu = true }, focus.modifier("more"), icon = Icons.Filled.MoreVert)
                 }
                 Spacer(Modifier.height(12.dp))
                 Text(
-                    "Back to RetroHub: " + ProfileConfig.exitHint(settings.exitCombo) + ".",
+                    tr("Back to RetroHub: {0}.", ProfileConfig.exitHint(settings.exitCombo)),
                     style = MaterialTheme.typography.bodySmall,
                     color = RH.TextDim,
                 )
@@ -149,21 +151,21 @@ fun GameDetailScreen(vm: MainViewModel, gameId: Long) {
 
     if (menu) {
         val options = buildList {
-            add("Core for this game" to { editCore = true })
-            add("Edit ${s.name}" to { vm.navigate(Screen.EditSystem(s.id)) })
-            if (states.isNotEmpty()) add("Delete saved progress" to { confirmDelete = true })
-            add((if (technical) "Hide technical details" else "Show technical details") to { technical = !technical })
+            add(tr("Core for this game") to { editCore = true })
+            add(tr("Edit {0}", s.name) to { vm.navigate(Screen.EditSystem(s.id)) })
+            if (states.isNotEmpty()) add(tr("Delete saved progress") to { confirmDelete = true })
+            add((if (technical) tr("Hide technical details") else tr("Show technical details")) to { technical = !technical })
         }
-        ChoiceDialog("Options", options.map { it.first }, onDismiss = { menu = false }) { i ->
+        ChoiceDialog(tr("Options"), options.map { it.first }, onDismiss = { menu = false }) { i ->
             menu = false
             options[i].second()
         }
     }
     if (editCore) {
         EditTextDialog(
-            title = "Core for this game",
+            title = tr("Core for this game"),
             initial = g.coreOverride,
-            hint = "Core name (the part before _libretro_android.so) or a full .so path. Leave empty to use the system core" +
+            hint = tr("Core name (the part before _libretro_android.so) or a full .so path. Leave empty to use the system core") +
                 (s.coreName.takeIf { it.isNotBlank() }?.let { " ($it)." } ?: "."),
             onDismiss = { editCore = false },
             onConfirm = { vm.setCoreOverride(g.id, it); editCore = false },
@@ -171,9 +173,9 @@ fun GameDetailScreen(vm: MainViewModel, gameId: Long) {
     }
     if (confirmDelete) {
         ConfirmDialog(
-            title = "Delete saved progress?",
-            text = "Removes this profile's ${states.size} save state(s) for ${g.title}, including the auto-save. In-game battery saves are kept. This cannot be undone.",
-            confirm = "Delete",
+            title = tr("Delete saved progress?"),
+            text = tr("Removes this profile's {0} save state(s) for {1}, including the auto-save. In-game battery saves are kept. This cannot be undone.", states.size, g.title),
+            confirm = tr("Delete"),
             onDismiss = { confirmDelete = false },
             onConfirm = { confirmDelete = false; vm.deleteStates(states) { tick++ } },
         )
@@ -184,11 +186,11 @@ fun GameDetailScreen(vm: MainViewModel, gameId: Long) {
 private fun MissingGame(vm: MainViewModel) {
     val focus = rememberFocusRestore(vm, "missing", "back", setOf("back"))
     Column(Modifier.fillMaxSize().padding(56.dp)) {
-        Text("This game is no longer in your library", style = MaterialTheme.typography.headlineMedium)
+        Text(tr("This game is no longer in your library"), style = MaterialTheme.typography.headlineMedium)
         Spacer(Modifier.height(10.dp))
-        Text("It was removed by a scan or its system was deleted.", style = MaterialTheme.typography.bodyLarge, color = RH.TextDim)
+        Text(tr("It was removed by a scan or its system was deleted."), style = MaterialTheme.typography.bodyLarge, color = RH.TextDim)
         Spacer(Modifier.height(24.dp))
-        RhButton("Back", { vm.back() }, focus.modifier("back"), primary = true)
+        RhButton(tr("Back"), { vm.back() }, focus.modifier("back"), primary = true)
     }
 }
 
@@ -197,10 +199,10 @@ private fun MissingGame(vm: MainViewModel) {
 private fun CoreLine(coreId: String) {
     if (coreId.isBlank()) return
     val name = CoreCatalog.displayName(coreId)
-    InfoLine("Core", name ?: coreId)
+    InfoLine(tr("Core"), name ?: coreId)
     if (name != null) {
         Text(
-            "If RetroArch says the core is missing: RetroArch → Online Updater → Core Downloader → $name",
+            tr("If RetroArch says the core is missing: RetroArch → Online Updater → Core Downloader → {0}", name),
             style = MaterialTheme.typography.bodySmall,
             color = RH.TextFaint,
             modifier = Modifier.padding(start = 156.dp, bottom = 4.dp),
@@ -211,24 +213,24 @@ private fun CoreLine(coreId: String) {
 @Composable
 private fun Details(g: GameEntity, stats: GameStatsEntity?) {
     Column {
-        g.developer?.let { InfoLine("Developer", it) }
-        g.publisher?.let { InfoLine("Publisher", it) }
-        InfoLine("Played", when (stats?.playCount ?: 0) { 0 -> "Never"; 1 -> "Once"; else -> "${stats?.playCount} times" })
-        stats?.lastPlayed?.let { InfoLine("Last played", DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT).format(Date(it))) }
-        InfoLine("File", g.fileName)
-        InfoLine("Size", formatSize(g.sizeBytes))
-        if (g.coreOverride.isNotBlank()) InfoLine("Core override", g.coreOverride)
+        g.developer?.let { InfoLine(tr("Developer"), it) }
+        g.publisher?.let { InfoLine(tr("Publisher"), it) }
+        InfoLine(tr("Played"), when (val n = stats?.playCount ?: 0) { 0 -> tr("Never"); 1 -> tr("Once"); else -> trCount(n, "{0} time", "{0} times") })
+        stats?.lastPlayed?.let { InfoLine(tr("Last played"), DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT).format(Date(it))) }
+        InfoLine(tr("File"), g.fileName)
+        InfoLine(tr("Size"), formatSize(g.sizeBytes))
+        if (g.coreOverride.isNotBlank()) InfoLine(tr("Core override"), g.coreOverride)
     }
 }
 
 @Composable
 private fun SaveStatesSection(states: List<SaveStateInfo>) {
     Column {
-        SectionTitle("Save states")
+        SectionTitle(tr("Save states"))
         if (states.isEmpty()) {
             Text(
-                "No saves yet for this profile. Progress is saved automatically whenever you return to RetroHub " +
-                    "(controller shortcut or Close Content). To save mid-game: RetroArch's menu → Save States → Save State.",
+                tr("No saves yet for this profile. Progress is saved automatically whenever you return to RetroHub " +
+                    "(controller shortcut or Close Content). To save mid-game: RetroArch's menu → Save States → Save State."),
                 style = MaterialTheme.typography.bodyMedium,
                 color = RH.TextDim,
             )
@@ -253,8 +255,8 @@ private fun SaveStatesSection(states: List<SaveStateInfo>) {
         }
         Spacer(Modifier.height(8.dp))
         Text(
-            "Resume loads the auto save. Load other slots in RetroArch: menu → Save States → State Slot → Load State. " +
-                "Leaving with the TV's Home button does not update the auto save.",
+            tr("Resume loads the auto save. Load other slots in RetroArch: menu → Save States → State Slot → Load State. " +
+                "Leaving with the TV's Home button does not update the auto save."),
             style = MaterialTheme.typography.bodySmall,
             color = RH.TextFaint,
         )
@@ -264,23 +266,23 @@ private fun SaveStatesSection(states: List<SaveStateInfo>) {
 @Composable
 private fun Technical(g: GameEntity, plan: LaunchPlanner.Result) {
     Column {
-        SectionTitle("Technical details")
-        InfoLine("Path", g.path ?: "No filesystem path (SAF only)", if (g.path == null) RH.Danger else RH.Text)
+        SectionTitle(tr("Technical details"))
+        InfoLine(tr("Path"), g.path ?: tr("No filesystem path (SAF only)"), if (g.path == null) RH.Danger else RH.Text)
         g.crc?.let { InfoLine("CRC32", it, mono = true) }
-        g.dbName?.let { InfoLine("Database name", it) }
+        g.dbName?.let { InfoLine(tr("Database name"), it) }
         if (plan is LaunchPlanner.Result.Ready) {
-            InfoLine("Core file", plan.plan.corePath, mono = true)
-            InfoLine("Config", plan.plan.extra("CONFIGFILE") ?: "RetroArch default")
+            InfoLine(tr("Core file"), plan.plan.corePath, mono = true)
+            InfoLine(tr("Config"), plan.plan.extra("CONFIGFILE") ?: tr("RetroArch default"))
             Spacer(Modifier.height(10.dp))
-            Text("Equivalent adb command", style = MaterialTheme.typography.labelMedium, color = RH.TextFaint)
+            Text(tr("Equivalent adb command"), style = MaterialTheme.typography.labelMedium, color = RH.TextFaint)
             Text(LaunchPlanner.adbCommand(plan.plan), style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace), color = RH.TextDim)
         }
     }
 }
 
 private fun formatSize(bytes: Long): String = when {
-    bytes <= 0 -> "Unknown"
-    bytes < 1024 * 1024 -> String.format(Locale.US, "%.1f KB", bytes / 1024.0)
-    bytes < 1024L * 1024 * 1024 -> String.format(Locale.US, "%.1f MB", bytes / (1024.0 * 1024))
-    else -> String.format(Locale.US, "%.2f GB", bytes / (1024.0 * 1024 * 1024))
+    bytes <= 0 -> tr("Unknown")
+    bytes < 1024 * 1024 -> tr("{0} KB", String.format(Locale.US, "%.1f", bytes / 1024.0))
+    bytes < 1024L * 1024 * 1024 -> tr("{0} MB", String.format(Locale.US, "%.1f", bytes / (1024.0 * 1024)))
+    else -> tr("{0} GB", String.format(Locale.US, "%.2f", bytes / (1024.0 * 1024 * 1024)))
 }

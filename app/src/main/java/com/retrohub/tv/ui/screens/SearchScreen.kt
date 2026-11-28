@@ -1,5 +1,6 @@
 package com.retrohub.tv.ui.screens
 
+import com.retrohub.tv.i18n.tr
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -91,7 +92,7 @@ fun SearchScreen(vm: MainViewModel) {
                 Spacer(Modifier.width(14.dp))
                 Box(Modifier.weight(1f)) {
                     if (query.isEmpty()) {
-                        Text("Search your games", fontSize = 22.sp, color = RH.TextFaint)
+                        Text(tr("Search your games"), fontSize = 22.sp, color = RH.TextFaint)
                     }
                     BasicTextField(
                         value = query,
@@ -123,9 +124,9 @@ fun SearchScreen(vm: MainViewModel) {
         }
         Text(
             when {
-                debounced.isBlank() -> "Type a title. Matches file names and database names."
-                results == null -> "Searching…"
-                list.isEmpty() -> "No games match \"$debounced\""
+                debounced.isBlank() -> tr("Type a title. Matches file names and database names.")
+                results == null -> tr("Searching…")
+                list.isEmpty() -> tr("No games match \"{0}\"", debounced)
                 else -> gamesLabel(list.size)
             },
             style = MaterialTheme.typography.bodyMedium,

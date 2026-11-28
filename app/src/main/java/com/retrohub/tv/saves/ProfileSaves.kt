@@ -1,5 +1,6 @@
 package com.retrohub.tv.saves
 
+import com.retrohub.tv.i18n.tr
 import java.io.File
 
 /**
@@ -62,12 +63,15 @@ object ProfileConfig {
         EXIT_OFF to "Off (use Close Content only)",
     )
 
-    fun exitLabel(combo: Int): String = EXIT_CHOICES.firstOrNull { it.first == combo }?.second ?: "Custom ($combo)"
+    fun exitLabel(combo: Int): String = EXIT_CHOICES.firstOrNull { it.first == combo }?.second?.let { tr(it) } ?: tr("Custom ({0})", combo)
 
     /** One-line instruction for getting back to RetroHub from a game. */
     fun exitHint(combo: Int): String =
-        (if (combo != EXIT_OFF) "${exitLabel(combo).substringBefore(" (")} on your controller, or " else "") +
-            "open RetroArch's menu (Start + Select by default) → Close Content"
+        if (combo == EXIT_OFF) tr("open RetroArch's menu (Start + Select by default) → Close Content")
+        else tr(
+            "{0} on your controller, or open RetroArch's menu (Start + Select by default) → Close Content",
+            tr(EXIT_CHOICES.firstOrNull { it.first == combo }?.second?.substringBefore(" (") ?: "Custom ($combo)"),
+        )
 }
 
 data class SaveStateInfo(
@@ -77,7 +81,7 @@ data class SaveStateInfo(
     val thumbnail: File?,
     val modified: Long,
 ) {
-    val label: String get() = if (slot < 0) "Auto save" else "Slot $slot"
+    val label: String get() = if (slot < 0) tr("Auto save") else tr("Slot {0}", slot)
 }
 
 object SaveStates {

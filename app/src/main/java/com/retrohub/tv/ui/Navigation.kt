@@ -19,4 +19,6 @@ sealed interface Screen {
     data object Discover : Screen { override val key = "discover" }
     /** "Who's playing?" picker; [manage] = rename / recolour / delete mode. */
     data class Profiles(val manage: Boolean = false) : Screen { override val key = "profiles-$manage" }
+    /** Language picker; [firstRun] = shown once before anything else on a fresh install. */
+    data class Language(val firstRun: Boolean = false) : Screen { override val key = "language" }
 }

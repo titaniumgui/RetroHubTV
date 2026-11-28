@@ -1,5 +1,13 @@
 package com.retrohub.tv
 
+import com.retrohub.tv.i18n.I18n
+import android.content.res.Configuration
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.key
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.LayoutDirection
+import com.retrohub.tv.i18n.AppLanguage
+import com.retrohub.tv.ui.screens.LanguageScreen
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
@@ -47,10 +55,22 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Android resets the default locale from the system configuration when an activity starts,
+        // so dates and the clock would fall back to the system language. Re-apply the app language.
+        reapplyLanguage()
         val lite = (application as RetroHubApp).isLite
         setContent {
             RetroHubTheme(lite = lite) { AppRoot(vm) }
         }
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        reapplyLanguage()
+    }
+
+    private fun reapplyLanguage() {
+        AppLanguage.fromCode(vm.settings.value.language)?.let(I18n::apply)
     }
 }
 
@@ -61,6 +81,10 @@ private fun AppRoot(vm: MainViewModel) {
 
     BackHandler(enabled = vm.stack.size > 1) { vm.back() }
 
+    // The whole UI follows the app language: right to left for Arabic, rebuilt when it changes.
+    val settings by vm.settings.collectAsStateWithLifecycle()
+    val lang = AppLanguage.fromCode(settings.language) ?: AppLanguage.ENGLISH
+
     // Drop saved UI state of screens that were popped, so the holder never grows unbounded.
     val visited = remember { mutableSetOf<String>() }
     visited += top.key
@@ -69,6 +93,8 @@ private fun AppRoot(vm: MainViewModel) {
         visited.filter { it !in live }.forEach { holder.removeState(it); visited.remove(it) }
     }
 
+    CompositionLocalProvider(LocalLayoutDirection provides if (lang.rtl) LayoutDirection.Rtl else LayoutDirection.Ltr) {
+    key(lang) {
     Box(Modifier.fillMaxSize().background(RH.Bg)) {
         holder.SaveableStateProvider(top.key) {
             when (top) {
@@ -81,9 +107,12 @@ private fun AppRoot(vm: MainViewModel) {
                 Screen.Settings -> SettingsScreen(vm)
                 is Screen.Profiles -> ProfilesScreen(vm, top)
                 Screen.Discover -> DiscoverScreen(vm)
+                is Screen.Language -> LanguageScreen(vm, top)
             }
         }
-        StatusOverlay(vm, Modifier.align(Alignment.BottomCenter))
+        if (top !is Screen.Language) StatusOverlay(vm, Modifier.align(Alignment.BottomCenter))
+    }
+    }
     }
 }
 

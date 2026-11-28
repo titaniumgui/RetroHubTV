@@ -24,6 +24,8 @@ Read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) first. For anything involving 
 - **Don't assume storage access.** Check both RetroArch builds with storage permissions and the Play edition.
 - **Room schema changes need a migration.**
 - **Lite mode must stay functional.**
+- **Translate user-visible text.** Wrap it in `tr("…")` or `trCount(…)` and add the Arabic text to
+  `i18n/ArabicCatalog.kt`; `I18nTest` fails otherwise. Check new screens in Arabic, which is laid out right to left.
 
 ## Pull requests
 

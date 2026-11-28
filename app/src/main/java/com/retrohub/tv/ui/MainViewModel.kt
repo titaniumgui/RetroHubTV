@@ -1,5 +1,9 @@
 package com.retrohub.tv.ui
 
+import com.retrohub.tv.i18n.AppLanguage
+import com.retrohub.tv.i18n.I18n
+import com.retrohub.tv.i18n.tr
+import com.retrohub.tv.i18n.trCount
 import android.app.Application
 import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.AndroidViewModel
@@ -124,18 +128,18 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private var workJob: Job? = null
 
     fun scan(systemId: Long?) {
-        if (workJob?.isActive == true) { toast("Already working — please wait"); return }
+        if (workJob?.isActive == true) { toast(tr("Already working — please wait")); return }
         workJob = viewModelScope.launch {
             val targets = if (systemId == null) db.systems().all() else listOfNotNull(db.systems().byId(systemId))
-            if (targets.isEmpty()) { toast("Add a system first"); return@launch }
+            if (targets.isEmpty()) { toast(tr("Add a system first")); return@launch }
             val summary = StringBuilder()
             for (s in targets) {
-                _busy.value = "Scanning ${s.name}…"
-                val r = app.scanner.scan(s) { n -> _busy.value = "Scanning ${s.name}…  $n found" }
+                _busy.value = tr("Scanning {0}…", s.name)
+                val r = app.scanner.scan(s) { n -> _busy.value = tr("Scanning {0}…  {1} found", s.name, n) }
                 if (summary.isNotEmpty()) summary.append("  •  ")
                 summary.append(
                     if (r.error != null) "${r.systemName}: ${r.error}"
-                    else "${r.systemName}: ${r.found} games" + if (r.removed > 0) " (${r.removed} removed)" else ""
+                    else "${r.systemName}: " + trCount(r.found, "{0} game", "{0} games") + if (r.removed > 0) " " + tr("({0} removed)", r.removed) else ""
                 )
             }
             toast(summary.toString())
@@ -145,7 +149,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun fetchMetadata(retryNotFound: Boolean) {
-        if (workJob?.isActive == true) { toast("Already working — please wait"); return }
+        if (workJob?.isActive == true) { toast(tr("Already working — please wait")); return }
         workJob = viewModelScope.launch {
             runMetadata(null, retryNotFound, quiet = false)
             _busy.value = null
@@ -153,14 +157,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private suspend fun runMetadata(systemIds: List<Long>?, retry: Boolean, quiet: Boolean) {
-        _busy.value = "Getting game info…"
+        _busy.value = tr("Getting game info…")
         val r = app.metadata.run(systemIds, retry, settings.value.metadataSnaps) { _busy.value = it }
         val text = buildString {
-            if (r.matched > 0 || r.notFound > 0) append("Game info: ${r.matched} matched")
-            if (r.notFound > 0) append(", ${r.notFound} not in database")
+            if (r.matched > 0 || r.notFound > 0) append(tr("Game info: {0} matched", r.matched))
+            if (r.notFound > 0) append(tr(", {0} not in database", r.notFound))
             r.errors.forEach { if (isNotEmpty()) append("  •  "); append(it) }
         }
-        if (text.isNotEmpty()) toast(text) else if (!quiet) toast("Game info is up to date")
+        if (text.isNotEmpty()) toast(text) else if (!quiet) toast(tr("Game info is up to date"))
     }
 
     fun cancelWork() { workJob?.cancel(); _busy.value = null }
@@ -169,7 +173,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun clearArtwork() = viewModelScope.launch {
         withContext(Dispatchers.IO) { app.metadata.clearArtwork() }
         db.games().clearDownloadedArtwork(app.filesDir.absolutePath + "/art/%")
-        toast("Downloaded artwork removed. Use \"Download game info\" to fetch it again.")
+        toast(tr("Downloaded artwork removed. Use \"Download game info now\" to fetch it again."))
     }
 
     // ---------------- games ----------------
@@ -181,7 +185,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun setCoreOverride(id: Long, core: String) = viewModelScope.launch { db.games().setCoreOverride(id, core.trim()) }
-    fun clearRecent() = viewModelScope.launch { db.games().clearRecent(currentProfileId()); toast("Recently played cleared") }
+    fun clearRecent() = viewModelScope.launch { db.games().clearRecent(currentProfileId()); toast(tr("Recently played cleared")) }
 
     fun planFor(game: GameEntity, system: SystemEntity): LaunchPlanner.Result {
         val s = settings.value
@@ -203,7 +207,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         // Always write a launch config: it carries the exit-to-RetroHub settings (and per-profile saves).
         val config = withContext(Dispatchers.IO) {
             ProfileStorage.writeConfig(s, p, autoLoad = !fresh).getOrElse { e ->
-                toast("Couldn't prepare RetroArch's settings (${e.message}). Starting with RetroArch's own config.")
+                toast(tr("Couldn't prepare RetroArch's settings ({0}). Starting with RetroArch's own config.", e.message))
                 s.configFile
             }
         }
@@ -215,10 +219,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             saf?.let { game.copy(path = it) }
         }
         if (launchGame == null) {
-            val folder = game.path?.substringBeforeLast('/') ?: "this game's folder"
+            val folder = game.path?.substringBeforeLast('/') ?: tr("this game's folder")
             toast(
-                "RetroArch can't open $folder yet. In RetroArch: Load Content → open that folder and start any game " +
-                    "from it once. RetroHub then launches all games there automatically."
+                tr("RetroArch can't open {0} yet. In RetroArch: Load Content → open that folder and start any game " +
+                    "from it once. RetroHub then launches all games there automatically.", folder),
             )
             return@launch
         }
@@ -251,7 +255,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun deleteStates(states: List<SaveStateInfo>, onDone: () -> Unit) = viewModelScope.launch {
         val n = withContext(Dispatchers.IO) { SaveStates.deleteAll(states) }
-        toast("Deleted $n save-state files")
+        toast(trCount(n, "Deleted {0} save-state file", "Deleted {0} save-state files"))
         onDone()
     }
 
@@ -264,7 +268,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun addProfile(name: String) = viewModelScope.launch {
         val count = db.profiles().all().size
-        db.profiles().insert(ProfileEntity(name = name.trim().ifEmpty { "Player ${count + 1}" }, colorIndex = count))
+        db.profiles().insert(ProfileEntity(name = name.trim().ifEmpty { tr("Player {0}", count + 1) }, colorIndex = count))
     }
 
     fun renameProfile(p: ProfileEntity, name: String) = viewModelScope.launch {
@@ -275,12 +279,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun deleteProfile(p: ProfileEntity) = viewModelScope.launch {
         val all = db.profiles().all()
-        if (all.size <= 1) { toast("Keep at least one profile"); return@launch }
+        if (all.size <= 1) { toast(tr("Keep at least one profile")); return@launch }
         db.profiles().delete(p)
         if (settings.value.currentProfileId == p.id) {
             store.update { s -> s.copy(currentProfileId = all.first { it.id != p.id }.id) }
         }
-        toast("Deleted ${p.name}. Their save files stay in the profile folder.")
+        toast(tr("Deleted {0}. Their save files stay in the profile folder.", p.name))
     }
 
     // ---------------- systems ----------------
@@ -292,14 +296,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         } else named
         val id = if (clean.id == 0L) db.systems().insert(clean) else { db.systems().update(clean); clean.id }
         back()
-        toast("Saved ${clean.name}")
+        toast(tr("Saved {0}", clean.name))
         if (scanAfter) scan(id)
     }
 
     fun deleteSystem(system: SystemEntity) = viewModelScope.launch {
         db.systems().delete(system)
         goHome()
-        toast("Deleted ${system.name}")
+        toast(tr("Deleted {0}", system.name))
     }
 
     // ---------------- settings & RetroArch ----------------
@@ -321,11 +325,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun detectRetroArch(preferPackage: String? = null) {
         val r = app.retroArchDetector.detect(settings.value, force = true, preferPackage = preferPackage)
         if (r.info == null) {
-            toast("No RetroArch found. Install RetroArch (any official build) and try again.")
+            toast(tr("No RetroArch found. Install RetroArch (any official build) and try again."))
             return
         }
         store.update { r.settings }
-        toast("Using ${r.info.packageName} ${r.info.versionName ?: ""}. Cores and config detected.")
+        toast(tr("Using {0}. Cores and config detected.", "${r.info.packageName} ${r.info.versionName ?: ""}".trim()))
     }
 
     /**
@@ -346,7 +350,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             db.systems().update(sys.copy(coreName = core, metadataDb = sys.metadataDb.ifBlank { dbName }))
             assigned++
         }
-        if (assigned > 0) toast("Cores chosen automatically for $assigned system" + if (assigned == 1) "" else "s")
+        if (assigned > 0) toast(trCount(assigned, "Cores chosen automatically for {0} system", "Cores chosen automatically for {0} systems"))
     }
 
     /** Silent check on start: fixes a missing/uninstalled RetroArch package and stale paths. */
@@ -354,7 +358,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         val r = app.retroArchDetector.detect(settings.value, force = false)
         if (r.info != null && r.changes.isNotEmpty()) {
             store.update { r.settings }
-            toast("Found RetroArch (${r.info.packageName}). Settings updated automatically.")
+            toast(tr("Found RetroArch ({0}). Settings updated automatically.", r.info.packageName))
         }
     }
 
@@ -392,7 +396,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     /** Adds the chosen systems, then scans them (and downloads game info when enabled). */
     fun addProposals(chosen: List<Proposal>) = viewModelScope.launch {
-        if (chosen.isEmpty()) { toast("Nothing selected"); return@launch }
+        if (chosen.isEmpty()) { toast(tr("Nothing selected")); return@launch }
         val order = db.systems().all().size
         chosen.forEachIndexed { i, p ->
             db.systems().insert(
@@ -408,13 +412,26 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
         _discovery.value = null
         goHome()
-        toast("Added ${chosen.size} system" + (if (chosen.size == 1) "" else "s") + ". Scanning…")
+        toast(trCount(chosen.size, "Added {0} system. Scanning…", "Added {0} systems. Scanning…"))
         scan(null)
     }
 
     fun openRetroArch() { app.launcher.openRetroArch(settings.value.retroArchPackage)?.let(::toast) }
 
+    /** Applies and saves [lang]. After the first-launch choice, continues to the profile picker if needed. */
+    fun chooseLanguage(lang: AppLanguage) {
+        val firstRun = (stack.lastOrNull() as? Screen.Language)?.firstRun == true
+        I18n.apply(lang)
+        store.update { it.copy(language = lang.code) }
+        back()
+        if (firstRun) viewModelScope.launch {
+            if (settings.value.askProfileOnStart && db.profiles().all().size > 1) navigate(Screen.Profiles())
+        }
+    }
+
     init {
+        // Fresh install: ask for the language before anything else.
+        if (settings.value.language.isBlank()) navigate(Screen.Language(firstRun = true))
         autoDetectRetroArch()
         viewModelScope.launch { autoAssignCores() }
         viewModelScope.launch {
@@ -423,7 +440,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             if (all.isNotEmpty() && all.none { it.id == s.currentProfileId }) {
                 store.update { it.copy(currentProfileId = all.first().id) }
             }
-            if (s.askProfileOnStart && all.size > 1) navigate(Screen.Profiles())
+            if (s.language.isNotBlank() && s.askProfileOnStart && all.size > 1) navigate(Screen.Profiles())
         }
     }
 

@@ -1,5 +1,7 @@
 # RetroHub TV
 
+**English** | [العربية](README.ar.md)
+
 A lightweight, console-style game launcher for Android TV, designed for devices with 1–2 GB of RAM.
 
 RetroHub TV is a **front-end**: it organises your game library and starts games in your existing
@@ -16,8 +18,8 @@ RetroHub TV is a **front-end**: it organises your game library and starts games 
 | ![Game library tinted by the selected game](docs/screenshots/games.png) | ![Game details page](docs/screenshots/details.png) |
 | **Search** | **Profiles** |
 | ![Search results](docs/screenshots/search.png) | ![Profile picker](docs/screenshots/profiles.png) |
-| **Settings** | |
-| ![Settings with About section](docs/screenshots/settings.png) | |
+| **Settings** | **Language choice on first launch** |
+| ![Settings with About section](docs/screenshots/settings.png) | ![Language screen](docs/screenshots/language.png) |
 
 *The games, artwork, studios and player names shown are fictional demo content made for these screenshots.*
 
@@ -31,6 +33,7 @@ RetroHub TV is a **front-end**: it organises your game library and starts games 
 - **Profiles:** each player has separate favourites, history, saves and save states
 - **Resume / Start fresh:** progress auto-saves when you leave a game
 - **Return to RetroHub** from a game with a controller shortcut (hold Start by default)
+- **English and Arabic:** choose a language on first launch or in Settings; Arabic uses a full right-to-left layout
 - **Search**, system filters and full D-pad navigation
 - **Low-memory design:** lazy lists, bounded image caches, no background services, and a Lite mode
 

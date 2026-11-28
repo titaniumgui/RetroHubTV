@@ -1,5 +1,6 @@
 package com.retrohub.tv.ui.screens
 
+import com.retrohub.tv.i18n.tr
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -62,11 +63,11 @@ fun ProfilesScreen(vm: MainViewModel, screen: Screen.Profiles) {
     Column(Modifier.fillMaxSize().padding(top = 32.dp), horizontalAlignment = Alignment.CenterHorizontally) {
         BrandMark()
         Spacer(Modifier.height(40.dp))
-        Text(if (screen.manage) "Manage profiles" else "Who's playing?", style = MaterialTheme.typography.displaySmall)
+        Text(if (screen.manage) tr("Manage profiles") else tr("Who's playing?"), style = MaterialTheme.typography.displaySmall)
         Spacer(Modifier.height(10.dp))
         Text(
-            if (screen.manage) "Select a profile to rename, recolour or delete it."
-            else "Each profile keeps its own favourites, history and save games.",
+            if (screen.manage) tr("Select a profile to rename, recolour or delete it.")
+            else tr("Each profile keeps its own favourites, history and save games."),
             style = MaterialTheme.typography.bodyLarge,
             color = RH.TextDim,
         )
@@ -87,7 +88,7 @@ fun ProfilesScreen(vm: MainViewModel, screen: Screen.Profiles) {
                 }
             }
             item("add") {
-                ProfileTile("Add profile", focus.modifier("add"), current = false, avatar = {
+                ProfileTile(tr("Add profile"), focus.modifier("add"), current = false, avatar = {
                     Box(Modifier.size(128.dp).border(2.dp, RH.Line, CircleShape), contentAlignment = Alignment.Center) {
                         Icon(Icons.Filled.Add, contentDescription = null, tint = RH.TextDim, modifier = Modifier.size(44.dp))
                     }
@@ -96,7 +97,7 @@ fun ProfilesScreen(vm: MainViewModel, screen: Screen.Profiles) {
         }
         Spacer(Modifier.height(24.dp))
         RhButton(
-            if (screen.manage) "Done" else "Manage profiles",
+            if (screen.manage) tr("Done") else tr("Manage profiles"),
             { vm.replaceTop(Screen.Profiles(manage = !screen.manage)) },
             focus.modifier("manage"),
             icon = if (screen.manage) null else Icons.Filled.Edit,
@@ -104,12 +105,12 @@ fun ProfilesScreen(vm: MainViewModel, screen: Screen.Profiles) {
     }
 
     if (adding) {
-        EditTextDialog("New profile", "", "Name shown on the dashboard.", onDismiss = { adding = false }) {
+        EditTextDialog(tr("New profile"), "", tr("Name shown on the dashboard."), onDismiss = { adding = false }) {
             vm.addProfile(it); adding = false
         }
     }
     actionsFor?.let { p ->
-        ChoiceDialog(p.name, listOf("Rename", "Change colour", "Delete"), onDismiss = { actionsFor = null }) { i ->
+        ChoiceDialog(p.name, listOf(tr("Rename"), tr("Change colour"), tr("Delete")), onDismiss = { actionsFor = null }) { i ->
             actionsFor = null
             when (i) {
                 0 -> renaming = p
@@ -119,13 +120,13 @@ fun ProfilesScreen(vm: MainViewModel, screen: Screen.Profiles) {
         }
     }
     renaming?.let { p ->
-        EditTextDialog("Rename profile", p.name, null, onDismiss = { renaming = null }) { vm.renameProfile(p, it); renaming = null }
+        EditTextDialog(tr("Rename profile"), p.name, null, onDismiss = { renaming = null }) { vm.renameProfile(p, it); renaming = null }
     }
     deleting?.let { p ->
         ConfirmDialog(
-            title = "Delete ${p.name}?",
-            text = "Removes this profile's favourites and play history. Its save files stay on storage in the RetroHub profiles folder.",
-            confirm = "Delete",
+            title = tr("Delete {0}?", p.name),
+            text = tr("Removes this profile's favourites and play history. Its save files stay on storage in the RetroHub profiles folder."),
+            confirm = tr("Delete"),
             onDismiss = { deleting = null },
             onConfirm = { deleting = null; vm.deleteProfile(p) },
         )
@@ -173,6 +174,6 @@ private fun ProfileTile(
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth(),
         )
-        if (current) Text("Current", style = MaterialTheme.typography.labelSmall, color = RH.TextFaint)
+        if (current) Text(tr("Current"), style = MaterialTheme.typography.labelSmall, color = RH.TextFaint)
     }
 }

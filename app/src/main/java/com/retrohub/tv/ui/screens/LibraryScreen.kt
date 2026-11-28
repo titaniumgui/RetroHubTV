@@ -1,5 +1,6 @@
 package com.retrohub.tv.ui.screens
 
+import com.retrohub.tv.i18n.tr
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -94,7 +95,7 @@ fun LibraryScreen(vm: MainViewModel, screen: Screen.Library) {
             Modifier.fillMaxWidth().padding(start = 48.dp, end = 48.dp, top = 18.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text("Games", style = MaterialTheme.typography.headlineMedium)
+            Text(tr("Games"), style = MaterialTheme.typography.headlineMedium)
             Spacer(Modifier.width(14.dp))
             Text(if (games == null) "" else gamesLabel(list.size), style = MaterialTheme.typography.bodyLarge, color = RH.TextDim)
         }
@@ -106,12 +107,12 @@ fun LibraryScreen(vm: MainViewModel, screen: Screen.Library) {
             modifier = Modifier.weight(1f),
         ) {
             item("all") {
-                FilterPill("All", screen.systemId == null && !screen.favoritesOnly, focus.modifier("f:all")) {
+                FilterPill(tr("All"), screen.systemId == null && !screen.favoritesOnly, focus.modifier("f:all")) {
                     vm.replaceTop(Screen.Library(null))
                 }
             }
             item("fav") {
-                FilterPill("★ Favourites", screen.favoritesOnly, focus.modifier("f:fav")) {
+                FilterPill(tr("★ Favourites"), screen.favoritesOnly, focus.modifier("f:fav")) {
                     vm.replaceTop(Screen.Library(null, favoritesOnly = true))
                 }
             }
@@ -122,15 +123,15 @@ fun LibraryScreen(vm: MainViewModel, screen: Screen.Library) {
             }
         }
             if (screen.systemId != null) {
-                RhButton("Scan", { vm.scan(screen.systemId) }, focus.modifier("a:scan"))
+                RhButton(tr("Scan"), { vm.scan(screen.systemId) }, focus.modifier("a:scan"))
                 Spacer(Modifier.width(10.dp))
-                RhButton("Edit system", { vm.navigate(Screen.EditSystem(screen.systemId)) }, focus.modifier("a:edit"))
+                RhButton(tr("Edit system"), { vm.navigate(Screen.EditSystem(screen.systemId)) }, focus.modifier("a:edit"))
             }
         }
         if (games != null && list.isEmpty()) {
             Notice(
-                if (screen.favoritesOnly) "No favourites yet. Open a game and press ☆ to add it."
-                else "No games here yet. Check the system's ROM folder and extensions, then scan.",
+                if (screen.favoritesOnly) tr("No favourites yet. Open a game and press ☆ to add it.")
+                else tr("No games here yet. Check the system's ROM folder and extensions, then scan."),
                 modifier = Modifier.padding(horizontal = 48.dp),
             )
         } else {

@@ -1,6 +1,8 @@
 package com.retrohub.tv.ui.screens
 
-import android.text.format.DateUtils
+import com.retrohub.tv.ui.components.startScrim
+import com.retrohub.tv.i18n.tr
+import com.retrohub.tv.i18n.relativeTime
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.BringIntoViewSpec
@@ -81,8 +83,8 @@ fun HomeScreen(vm: MainViewModel) {
 
     // The hero shows the last focused game; before anything is focused, the most recent one.
     var focusedHero by remember { mutableStateOf<HeroGame?>(null) }
-    val featured = recent.firstOrNull()?.let { HeroGame(it, "CONTINUE PLAYING") }
-        ?: favorites.firstOrNull()?.let { HeroGame(it, "FAVOURITE") }
+    val featured = recent.firstOrNull()?.let { HeroGame(it, tr("CONTINUE PLAYING")) }
+        ?: favorites.firstOrNull()?.let { HeroGame(it, tr("FAVOURITE")) }
     val hero = focusedHero ?: featured
 
     val keys = buildSet {
@@ -117,11 +119,11 @@ fun HomeScreen(vm: MainViewModel) {
                     if (systems.isEmpty()) item("onboarding") {
                         // Button first: the focused element is pinned to the top of the list.
                         Column(Modifier.padding(start = 56.dp, end = 56.dp, top = 8.dp, bottom = 18.dp)) {
-                            RhButton("Find my games automatically", { vm.navigate(Screen.Discover) }, focus.modifier("onboard:find"), primary = true, glass = true)
+                            RhButton(tr("Find my games automatically"), { vm.navigate(Screen.Discover) }, focus.modifier("onboard:find"), primary = true, glass = true)
                             Spacer(Modifier.height(14.dp))
                             Text(
-                                "RetroHub reads the games RetroArch already knows about, then searches your storage for ROMs. " +
-                                    "You review the result before anything is added.",
+                                tr("RetroHub reads the games RetroArch already knows about, then searches your storage for ROMs. " +
+                                    "You review the result before anything is added."),
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = RH.TextDim,
                             )
@@ -129,14 +131,14 @@ fun HomeScreen(vm: MainViewModel) {
                     }
                     if (recent.isNotEmpty()) item("recent") {
                         CompositionLocalProvider(LocalBringIntoViewSpec provides rowSpec) {
-                            Shelf("Continue playing", recent, "recent", focus, onFocused = { focusedHero = HeroGame(it, "CONTINUE PLAYING") }) {
+                            Shelf(tr("Continue playing"), recent, "recent", focus, onFocused = { focusedHero = HeroGame(it, tr("CONTINUE PLAYING")) }) {
                                 vm.navigate(Screen.Game(it.id))
                             }
                         }
                     }
                     if (favorites.isNotEmpty()) item("fav") {
                         CompositionLocalProvider(LocalBringIntoViewSpec provides rowSpec) {
-                            Shelf("Favourites", favorites, "fav", focus, onFocused = { focusedHero = HeroGame(it, "FAVOURITE") }) {
+                            Shelf(tr("Favourites"), favorites, "fav", focus, onFocused = { focusedHero = HeroGame(it, tr("FAVOURITE")) }) {
                                 vm.navigate(Screen.Game(it.id))
                             }
                         }
@@ -188,7 +190,7 @@ private fun HeroArt(tile: GameTile?) {
         )
         Box(
             Modifier.fillMaxSize().background(
-                Brush.horizontalGradient(0f to Color.Black.copy(alpha = 0.92f), 0.45f to Color.Black.copy(alpha = 0.45f), 0.8f to Color.Transparent)
+                startScrim(0f to Color.Black.copy(alpha = 0.92f), 0.45f to Color.Black.copy(alpha = 0.45f), 0.8f to Color.Transparent)
             )
         )
         Box(
@@ -215,16 +217,16 @@ private fun Hero(
             .padding(start = 56.dp, top = 22.dp),
     ) {
         if (hero == null) {
-            Text("WELCOME", style = MaterialTheme.typography.labelMedium, color = RH.TextDim)
+            Text(tr("WELCOME"), style = MaterialTheme.typography.labelMedium, color = RH.TextDim)
             Spacer(Modifier.height(6.dp))
             Text(
-                if (profileName != null) "Hello, $profileName" else "Hello",
+                if (profileName != null) tr("Hello, {0}", profileName) else tr("Hello"),
                 style = MaterialTheme.typography.displayLarge,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
             Spacer(Modifier.height(8.dp))
-            Text("${gamesLabel(total)} in your library", style = MaterialTheme.typography.bodyLarge, color = RH.TextDim)
+            Text(tr("{0} in your library", gamesLabel(total)), style = MaterialTheme.typography.bodyLarge, color = RH.TextDim)
             return@Column
         }
         val t = hero.tile
@@ -236,13 +238,13 @@ private fun Hero(
             systemName,
             t.genre,
             t.releaseYear?.toString(),
-            t.lastPlayed?.let { "Played " + DateUtils.getRelativeTimeSpanString(it, System.currentTimeMillis(), DateUtils.MINUTE_IN_MILLIS) },
+            t.lastPlayed?.let { tr("Played {0}", relativeTime(it)) },
         ).joinToString("  ·  ")
         Text(meta, style = MaterialTheme.typography.bodyLarge, color = Color.White.copy(alpha = 0.78f), maxLines = 1, overflow = TextOverflow.Ellipsis)
         Spacer(Modifier.height(18.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            RhButton("Play", { vm.play(t.id) }, focus.modifier("hero:play"), icon = Icons.Filled.PlayArrow, primary = true, glass = true)
-            RhButton("Details", { vm.navigate(Screen.Game(t.id)) }, focus.modifier("hero:info"), icon = Icons.Filled.Info, glass = true)
+            RhButton(tr("Play"), { vm.play(t.id) }, focus.modifier("hero:play"), icon = Icons.Filled.PlayArrow, primary = true, glass = true)
+            RhButton(tr("Details"), { vm.navigate(Screen.Game(t.id)) }, focus.modifier("hero:info"), icon = Icons.Filled.Info, glass = true)
         }
     }
 }
@@ -281,7 +283,7 @@ private fun Shelf(
 @Composable
 private fun SystemShelf(vm: MainViewModel, systems: List<SystemWithCount>, focus: FocusRestore) {
     Column {
-        SectionTitle("Systems", Modifier.padding(start = 56.dp))
+        SectionTitle(tr("Systems"), Modifier.padding(start = 56.dp))
         LazyRow(
             contentPadding = PaddingValues(start = 56.dp, end = 56.dp, top = 6.dp, bottom = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(18.dp),
@@ -293,10 +295,10 @@ private fun SystemShelf(vm: MainViewModel, systems: List<SystemWithCount>, focus
                 }
             }
             if (systems.isNotEmpty()) item("all") {
-                SystemTile("All games", "Every system", focus.modifier("sys:all")) { vm.goTab(Screen.Library(null)) }
+                SystemTile(tr("All games"), tr("Every system"), focus.modifier("sys:all")) { vm.goTab(Screen.Library(null)) }
             }
             item("add") {
-                SystemTile("+ Add system", "ROM folder · core · BIOS", focus.modifier("sys:add")) { vm.navigate(Screen.Systems) }
+                SystemTile(tr("+ Add system"), tr("ROM folder · core · BIOS"), focus.modifier("sys:add")) { vm.navigate(Screen.Systems) }
             }
         }
     }

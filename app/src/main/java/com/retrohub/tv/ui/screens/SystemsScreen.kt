@@ -1,5 +1,6 @@
 package com.retrohub.tv.ui.screens
 
+import com.retrohub.tv.i18n.tr
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -52,17 +53,17 @@ fun SystemsScreen(vm: MainViewModel) {
 
     Page(
         vm,
-        title = "Systems",
-        subtitle = "Each system is a ROM folder, its file types and the RetroArch core that runs them",
+        title = tr("Systems"),
+        subtitle = tr("Each system is a ROM folder, its file types and the RetroArch core that runs them"),
         actions = {
-            RhButton("Find my games", { vm.navigate(Screen.Discover) }, focus.modifier("find"), icon = Icons.Filled.Search, primary = true)
-            RhButton("Add system", { choosePreset = true }, focus.modifier("add"), icon = Icons.Filled.Add)
-            if (busy == null) RhButton("Scan all", { vm.scan(null) }, focus.modifier("scan"), icon = Icons.Filled.Refresh)
-            else RhButton("Stop", { vm.cancelWork() }, focus.modifier("scan"))
+            RhButton(tr("Find my games"), { vm.navigate(Screen.Discover) }, focus.modifier("find"), icon = Icons.Filled.Search, primary = true)
+            RhButton(tr("Add system"), { choosePreset = true }, focus.modifier("add"), icon = Icons.Filled.Add)
+            if (busy == null) RhButton(tr("Scan all"), { vm.scan(null) }, focus.modifier("scan"), icon = Icons.Filled.Refresh)
+            else RhButton(tr("Stop"), { vm.cancelWork() }, focus.modifier("scan"))
         },
     ) {
         if (systemsOrNull != null && systems.isEmpty()) {
-            Notice("No systems yet. Press \"Add system\" and start from a preset (it fills in the name, file types and metadata database).")
+            Notice(tr("No systems yet. Press \"Add system\" and start from a preset (it fills in the name, file types and metadata database)."))
         }
         LazyColumn(
             verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -80,10 +81,10 @@ fun SystemsScreen(vm: MainViewModel) {
                     Row(Modifier.padding(horizontal = 22.dp, vertical = 14.dp), verticalAlignment = Alignment.CenterVertically) {
                         Column(Modifier.weight(1f)) {
                             Text(s.name, style = MaterialTheme.typography.titleMedium)
-                            Text(s.romFolder.ifBlank { "No ROM folder" }, style = MaterialTheme.typography.bodySmall, color = RH.TextDim, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            Text(s.romFolder.ifBlank { tr("No ROM folder") }, style = MaterialTheme.typography.bodySmall, color = RH.TextDim, maxLines = 1, overflow = TextOverflow.Ellipsis)
                             Text(
-                                "Core: " + (s.corePath.ifBlank { s.coreName }.ifBlank { "not set" }) +
-                                    "   ·   ." + s.extensions.replace(",", " .").ifBlank { "no extensions" },
+                                tr("Core: {0}", s.corePath.ifBlank { s.coreName }.ifBlank { tr("not set") }) +
+                                    "   ·   " + (if (s.extensions.isBlank()) tr("no extensions") else "." + s.extensions.replace(",", " .")),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = if (s.coreName.isBlank() && s.corePath.isBlank()) RH.Danger else RH.TextFaint,
                                 maxLines = 1,
@@ -93,8 +94,8 @@ fun SystemsScreen(vm: MainViewModel) {
                         Column(horizontalAlignment = Alignment.End) {
                             Text(gamesLabel(item.gameCount), style = MaterialTheme.typography.titleSmall)
                             Text(
-                                if (s.lastScan == 0L) "Never scanned"
-                                else "Scanned " + DateFormat.getDateInstance(DateFormat.SHORT).format(Date(s.lastScan)),
+                                if (s.lastScan == 0L) tr("Never scanned")
+                                else tr("Scanned {0}", DateFormat.getDateInstance(DateFormat.SHORT).format(Date(s.lastScan))),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = RH.TextFaint,
                             )
@@ -107,7 +108,7 @@ fun SystemsScreen(vm: MainViewModel) {
 
     if (choosePreset) {
         ChoiceDialog(
-            title = "Start from",
+            title = tr("Start from"),
             options = SystemPresets.all.map { it.name },
             onDismiss = { choosePreset = false },
             onChoose = { index ->

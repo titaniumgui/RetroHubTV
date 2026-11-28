@@ -1,5 +1,6 @@
 package com.retrohub.tv.storage
 
+import com.retrohub.tv.i18n.tr
 import android.Manifest
 import android.content.ActivityNotFoundException
 import android.content.Context
@@ -87,26 +88,26 @@ object StorageAccess {
 
     fun describeFolder(context: Context, folder: String): FolderInfo {
         val value = folder.trim()
-        if (value.isEmpty()) return FolderInfo(FolderKind.UNSET, null, "No ROM folder set.")
+        if (value.isEmpty()) return FolderInfo(FolderKind.UNSET, null, tr("No ROM folder set."))
         if (StoragePaths.isContentUri(value)) {
             val uri = Uri.parse(value)
             val granted = hasTreePermission(context, value)
             val path = treeToPath(uri)
             val text = when {
-                !granted -> "SAF folder, but the permission is gone. Pick the folder again."
-                path != null -> "SAF folder → $path. RetroArch will be given this path."
-                else -> "SAF folder from ${uri.authority}. It has no filesystem path, so RetroArch " +
+                !granted -> tr("SAF folder, but the permission is gone. Pick the folder again.")
+                path != null -> tr("SAF folder → {0}. RetroArch will be given this path.", path)
+                else -> tr("SAF folder from {0}. It has no filesystem path, so RetroArch " +
                     "cannot open these games (it does not accept content:// URIs). Move the ROMs to " +
-                    "internal storage and pick them from the \"Internal storage\" root, or type the path."
+                    "internal storage and pick them from the \"Internal storage\" root, or type the path.", uri.authority)
             }
             return FolderInfo(if (path != null) FolderKind.SAF_MAPPED else FolderKind.SAF_UNMAPPED, path, text, granted)
         }
         val access = hasBroadFileAccess(context)
         val text = if (access) {
-            "Path folder. RetroArch receives the file paths directly."
+            tr("Path folder. RetroArch receives the file paths directly.")
         } else {
-            "Path folder, but RetroHub cannot list it yet: grant storage access in Settings " +
-                "(or pick the folder with the system folder picker)."
+            tr("Path folder, but RetroHub cannot list it yet: grant storage access in Settings " +
+                "(or pick the folder with the system folder picker).")
         }
         return FolderInfo(FolderKind.PATH, value, text, access)
     }

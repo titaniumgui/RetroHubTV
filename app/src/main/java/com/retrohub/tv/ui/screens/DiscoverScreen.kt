@@ -1,5 +1,7 @@
 package com.retrohub.tv.ui.screens
 
+import com.retrohub.tv.i18n.tr
+import com.retrohub.tv.i18n.trCount
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -67,13 +69,13 @@ fun DiscoverScreen(vm: MainViewModel) {
 
     Page(
         vm,
-        title = "Find my games",
-        subtitle = "RetroArch ${settings.retroArchPackage} · uses RetroArch's playlists, then searches your storage",
+        title = tr("Find my games"),
+        subtitle = tr("RetroArch {0} · uses RetroArch's playlists, then searches your storage", settings.retroArchPackage),
         scroll = true,
         actions = {
             if (state?.done == true && proposals.isNotEmpty()) {
                 RhButton(
-                    "Add ${chosen.size} system" + if (chosen.size == 1) "" else "s",
+                    trCount(chosen.size, "Add {0} system", "Add {0} systems"),
                     { vm.addProposals(chosen) },
                     focus.modifier("add"),
                     icon = Icons.Filled.Check,
@@ -81,33 +83,33 @@ fun DiscoverScreen(vm: MainViewModel) {
                 )
             }
             if (state?.running != true) {
-                RhButton(if (state == null) "Search now" else "Search again", { vm.startDiscovery() }, focus.modifier("again"), icon = Icons.Filled.Search)
+                RhButton(if (state == null) tr("Search now") else tr("Search again"), { vm.startDiscovery() }, focus.modifier("again"), icon = Icons.Filled.Search)
             } else {
-                RhButton("Stop", { vm.cancelDiscovery() })
+                RhButton(tr("Stop"), { vm.cancelDiscovery() })
             }
         },
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             if (!hasAccess) {
                 Notice(
-                    "RetroHub needs storage access to look for games. Grant it in Settings → Storage, then come back.",
+                    tr("RetroHub needs storage access to look for games. Grant it in Settings → Storage, then come back."),
                     color = RH.Gold,
                 )
-                RhButton("Open Settings", { vm.navigate(Screen.Settings) })
+                RhButton(tr("Open Settings"), { vm.navigate(Screen.Settings) })
             }
             val st = state
             when {
                 st == null -> Unit
-                st.running -> Notice(st.progress ?: "Searching…")
+                st.running -> Notice(st.progress ?: tr("Searching…"))
                 proposals.isEmpty() -> Notice(
-                    "No games found. Put ROMs in a folder on internal storage (for example ROMs/snes) or scan them in RetroArch " +
-                        "(Import Content), then search again. You can also add a system by hand under Settings → Manage systems.",
+                    tr("No games found. Put ROMs in a folder on internal storage (for example ROMs/snes) or scan them in RetroArch " +
+                        "(Import Content), then search again. You can also add a system by hand under Settings → Manage systems."),
                 )
                 else -> {
                     Text(
-                        "Found ${proposals.size} system" + (if (proposals.size == 1) "" else "s") +
-                            (if (st.playlistsFound > 0) " · ${st.playlistsFound} RetroArch playlist" + (if (st.playlistsFound == 1) "" else "s") + " read" else "") +
-                            ". Choose what to add, then press Add.",
+                        trCount(proposals.size, "Found {0} system", "Found {0} systems") +
+                            (if (st.playlistsFound > 0) " · " + trCount(st.playlistsFound, "{0} RetroArch playlist read", "{0} RetroArch playlists read") else "") +
+                            ". " + tr("Choose what to add, then press Add."),
                         style = MaterialTheme.typography.bodyMedium,
                         color = RH.TextDim,
                     )
@@ -117,8 +119,8 @@ fun DiscoverScreen(vm: MainViewModel) {
                         }
                     }
                     Text(
-                        "Cores are picked for you. If RetroArch says a core is missing, install it once from RetroArch → " +
-                            "Online Updater → Core Downloader. You can switch cores per system at any time.",
+                        tr("Cores are picked for you. If RetroArch says a core is missing, install it once from RetroArch → " +
+                            "Online Updater → Core Downloader. You can switch cores per system at any time."),
                         style = MaterialTheme.typography.bodySmall,
                         color = RH.TextFaint,
                     )
@@ -154,16 +156,16 @@ private fun ProposalRow(p: Proposal, checked: Boolean, modifier: Modifier, onTog
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(p.name, style = MaterialTheme.typography.titleMedium)
                     Spacer(Modifier.width(10.dp))
-                    if (p.fromRetroArch) Tag("From RetroArch")
-                    if (p.alreadyAdded) { Spacer(Modifier.width(6.dp)); Tag("Already added") }
+                    if (p.fromRetroArch) Tag(tr("From RetroArch"))
+                    if (p.alreadyAdded) { Spacer(Modifier.width(6.dp)); Tag(tr("Already added")) }
                 }
                 Spacer(Modifier.height(2.dp))
                 Text(p.romFolder, style = MaterialTheme.typography.bodySmall, color = RH.TextDim, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Text(
                     when {
-                        p.coreName.isBlank() -> "Core: no recommendation for this system — choose one later"
-                        p.coreFromRetroArch -> "Core: ${p.coreName} · the one RetroArch already uses"
-                        else -> "Core: ${p.coreName} · chosen automatically"
+                        p.coreName.isBlank() -> tr("Core: no recommendation for this system — choose one later")
+                        p.coreFromRetroArch -> tr("Core: {0} · the one RetroArch already uses", p.coreName)
+                        else -> tr("Core: {0} · chosen automatically", p.coreName)
                     },
                     style = MaterialTheme.typography.bodySmall,
                     color = if (p.coreName.isNotBlank()) RH.Ok else RH.Gold,

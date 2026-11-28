@@ -1,5 +1,6 @@
 package com.retrohub.tv.launch
 
+import com.retrohub.tv.i18n.tr
 import android.content.ActivityNotFoundException
 import android.content.ComponentName
 import android.content.Context
@@ -68,7 +69,7 @@ class RetroArchLauncher(private val context: Context) {
 
     fun launch(plan: LaunchPlanner.LaunchPlan, clearTask: Boolean): String? {
         if (info(plan.packageName) == null) {
-            return "RetroArch (${plan.packageName}) is not installed or not visible to RetroHub."
+            return tr("RetroArch ({0}) is not installed or not visible to RetroHub.", plan.packageName)
         }
         val intent = Intent(Intent.ACTION_MAIN).apply {
             component = ComponentName(plan.packageName, plan.activityName)
@@ -81,9 +82,9 @@ class RetroArchLauncher(private val context: Context) {
             context.startActivity(intent)
             null
         } catch (_: ActivityNotFoundException) {
-            "RetroArch activity ${plan.activityName} was not found in ${plan.packageName}."
+            tr("RetroArch activity {0} was not found in {1}.", plan.activityName, plan.packageName)
         } catch (e: SecurityException) {
-            "Android blocked the launch: ${e.message}"
+            tr("Android blocked the launch: {0}", e.message)
         }
     }
 
@@ -105,12 +106,12 @@ class RetroArchLauncher(private val context: Context) {
         val pm = context.packageManager
         val intent = pm.getLeanbackLaunchIntentForPackage(packageName)
             ?: pm.getLaunchIntentForPackage(packageName)
-            ?: return "RetroArch ($packageName) is not installed."
+            ?: return tr("RetroArch ({0}) is not installed.", packageName)
         return try {
             context.startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
             null
         } catch (_: ActivityNotFoundException) {
-            "Could not open RetroArch."
+            tr("Could not open RetroArch.")
         }
     }
 }

@@ -2,6 +2,15 @@
 
 All notable changes are listed here. Versions follow `MAJOR.MINOR.PATCH`.
 
+## Unreleased
+
+### Added
+- Arabic language support with a right-to-left layout, Arabic plural forms, and Arabic dates and times.
+- A language screen on first launch, and a Language option in Settings.
+
+### Fixed
+- System list showed ".no extensions" when a system had no file extensions.
+
 ## 1.2.1 - 2026-11-20
 
 ### Added
